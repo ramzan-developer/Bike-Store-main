@@ -522,3 +522,54 @@ app.put("/orders/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Get all suppliers
+app.get("/supplier", async (req, res) => {
+  try {
+    const suppliers = await supplierModel.find();
+    res.status(200).json(suppliers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete supplier
+app.delete("/supplier/:id", async (req, res) => {
+  try {
+    const deletedSupplier = await supplierModel.findByIdAndDelete(req.params.id);
+    if (!deletedSupplier) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+    res.status(200).json({ message: "Supplier deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update supplier status
+app.put("/supplier/:id", async (req, res) => {
+  try {
+    const updatedSupplier = await supplierModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.status(200).json(updatedSupplier);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update user status
+app.put("/user/:id", async (req, res) => {
+  try {
+    const updatedUser = await userModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});

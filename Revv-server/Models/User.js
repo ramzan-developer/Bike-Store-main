@@ -12,6 +12,10 @@ const userSchema = new Schema({
     enum: ["user", "supplier", "admin"], // Optional: add "admin" for future
     default: "user",
   },
+  isActive: {
+  type: Boolean,
+  default: true
+}
 });
 
 // const userSchema = new Schema({

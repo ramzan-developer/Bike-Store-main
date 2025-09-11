@@ -100,11 +100,11 @@ const SupplierDashboard = () => {
               Manage Bikes
             </button>
             <button 
-              onClick={() => navigate("/supplier/orders")}
-              className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
-            >
-              View Orders
-            </button>
+  onClick={() => navigate("/supplier/orders")}
+  className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
+>
+  View Orders
+</button>
           </div>
         </div>
       </div>

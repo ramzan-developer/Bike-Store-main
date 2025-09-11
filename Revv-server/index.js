@@ -490,3 +490,35 @@ app.get("/user/:email", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+// Get supplier orders
+app.get("/supplier-orders/:supplierEmail", async (req, res) => {
+  try {
+    const orders = await orderModel.find({
+      "products.supplierEmail": req.params.supplierEmail
+    }).sort({ orderDate: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update order
+app.put("/orders/:id", async (req, res) => {
+  try {
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});

@@ -50,6 +50,12 @@ export default function Nav({ cartCount }) {
               Admin Dashboard
             </Link>
           )}
+
+          {userRole === "user" && (
+  <Link className="ml-8 mr-8" to="/order-history">
+    Order History
+  </Link>
+)}
         </div>
 
         <div

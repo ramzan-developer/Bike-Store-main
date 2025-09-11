@@ -5,9 +5,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
   const [showModal, setShowModal] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({
+    name: "",
+    phno: "",
+    address: "",
+  });
   const [paymentMethod, setPaymentMethod] = useState("cod");
-  const [email, setEmail] = useState(null);
+  const [email, setEmail] = useState("");
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [address, setAddress] = useState("");
@@ -22,6 +26,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (email) {
+      // Use the endpoint you just added
       axios
         .get(`http://localhost:3000/user/${email}`)
         .then((res) => {
@@ -47,22 +52,28 @@ export default function Checkout() {
 
   const createOrder = async () => {
     try {
-      // Get supplier emails from products
-      const supplierEmails = [...new Set(cartItems.map(item => {
-        // For now, we'll use a placeholder since supplierEmail isn't in cart
-        // You'll need to modify your addToCart function to include supplierEmail
-        return "bakul@gmail.com"; // Placeholder - you need to fix this
-      }))];
-      
+      // Validate required fields
+      if (!email || !address || cartItems.length === 0) {
+        throw new Error("Missing required order information");
+      }
+
       const orderData = {
         userEmail: email,
-        products: cartItems,
-        totalAmount: total * 0.9 + 5799, // Apply discount and add delivery
+        products: cartItems.map(item => ({
+          productName: item.productName,
+          price: item.price,
+          quantity: item.quantity,
+          imgURL: item.imgURL,
+          supplierEmail: item.supplierEmail || "bakul@gmail.com"
+        })),
+        totalAmount: total * 0.9 + 5799,
         address: address,
         paymentMethod: paymentMethod,
-        paymentStatus: "completed", // For COD, mark as completed
+        paymentStatus: "completed",
         status: "pending"
       };
+      
+      console.log("Submitting order:", orderData);
       
       const response = await axios.post("http://localhost:3000/orders", orderData);
       return response.data;
@@ -75,7 +86,7 @@ export default function Checkout() {
   return (
     <>
       <div className="bg-cream2 min-h-screen py-10 px-4 md:px-16 flex items-center flex-col lg:flex-row gap-8">
-        {/* Left Section */}
+        {/* Left Section - Checkout Form */}
         <div className="admindiv animate-move-out custom-shadow w-full lg:w-1/2 p-8 rounded-2xl shadow-md space-y-6">
           <h2 className="text-3xl font-bold text-white text-center">
             Checkout
@@ -87,22 +98,26 @@ export default function Checkout() {
             </h3>
             <div className="space-y-3">
               <input
-                value={user?.name}
+                value={user.name}
                 type="text"
                 placeholder="Full Name"
                 className="w-full p-3 border border-gray-300 cursor-not-allowed bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                readOnly
               />
               <input
-                value={user?.phno}
+                value={user.phno}
                 type="text"
                 placeholder="Phone Number"
                 className="w-full p-3 border border-gray-300 cursor-not-allowed bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                readOnly
               />
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Address"
                 className="w-full p-3 border border-gray-300 bg-gray-50 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+                rows="3"
+                required
               />
               <input
                 value={email}
@@ -142,14 +157,24 @@ export default function Checkout() {
           </div>
 
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              if (!address) {
+                toast.error("Please enter your delivery address");
+                return;
+              }
+              if (cartItems.length === 0) {
+                toast.error("Your cart is empty");
+                return;
+              }
+              setShowModal(true);
+            }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl text-lg font-semibold transition"
           >
             Place Order
           </button>
         </div>
 
-        {/* Right Section */}
+        {/* Right Section - Order Summary */}
         <div className="admindiv animate-move-in custom-shadow w-full h-fit lg:w-5/6 p-8 py-10 rounded-2xl shadow-md">
           <h2 className="text-3xl font-bold text-white text-center mb-6">
             Order Summary
@@ -175,7 +200,7 @@ export default function Checkout() {
                 ))}
               </div>
 
-              <div className="space-y-3 mt-14  text-gray-100">
+              <div className="space-y-3 mt-14 text-gray-100">
                 <div className="flex justify-between">
                   <span>Total</span>
                   <span>{formatRupees(total)}</span>
@@ -201,7 +226,7 @@ export default function Checkout() {
           )}
         </div>
 
-        {/* Modal */}
+        {/* Confirmation Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <div className="bg-white p-6 animate-fade-in rounded-xl shadow-lg relative w-full max-w-md text-center">
@@ -227,8 +252,8 @@ export default function Checkout() {
 
                     toast.success("Order placed successfully! Will be delivered within 2 business days.");
                     
-                    // Navigate to homepage
-                    navigate("/homepage");
+                    // Navigate to order history
+                    navigate("/order-history");
                   } catch (error) {
                     console.error("Failed to place order:", error);
                     toast.error("Failed to process order. Try again!");

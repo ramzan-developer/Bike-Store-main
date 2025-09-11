@@ -32,29 +32,34 @@ export default function CartPage() {
     }
   };
 
-  // Update product quantity in the cart
-  const handleQuantityChange = async (productName, newQuantity) => {
-    if (newQuantity < 1) return; // Prevent quantity from going below 1
+ // In your CartPage.jsx, update the handleQuantityChange function:
+const handleQuantityChange = async (productName, newQuantity) => {
+  if (newQuantity < 1) {
+    // If quantity becomes 0, remove the product
+    removeFromCart(productName);
+    return;
+  }
 
-    try {
-      const response = await fetch(`http://localhost:3000/cart/${email}/${productName}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: newQuantity }),
-      });
+  try {
+    const response = await fetch(`http://localhost:3000/cart/${email}/${productName}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantity: newQuantity }),
+    });
 
-      if (!response.ok) throw new Error("Failed to update quantity");
+    if (!response.ok) throw new Error("Failed to update quantity");
 
-      // Update state
-      setProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product.productName === productName ? { ...product, quantity: newQuantity } : product
-        )
-      );
-    } catch (error) {
-      console.error("Error updating quantity:", error.message);
-    }
-  };
+    // Update state
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.productName === productName ? { ...product, quantity: newQuantity } : product
+      )
+    );
+  } catch (error) {
+    console.error("Error updating quantity:", error.message);
+    toast.error("Failed to update quantity");
+  }
+};
 
   // Remove product from cart
   const removeFromCart = async (productName) => {

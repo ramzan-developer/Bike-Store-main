@@ -17,34 +17,42 @@ export default function Products({ productName, rate, description, imgURL }) {
   }, []);
 
   //handle the add to cart
-  function handleClick(e) {
-    e.preventDefault();
-    toast.success("Product added to cart");
-    const userEmail = email;
-    // In your handleClick function, update the product object:
-const product = {
-  productName,
-  price: rate,
-  imgURL,
-  quantity: 1,
-  supplierEmail: item.supplierEmail // Add this line - you'll need to pass supplierEmail as a prop
-};
-
-    fetch("http://localhost:3000/cart", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userEmail, products: [product] }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Cart updated:", data);
-      })
-      .catch((error) => {
-        console.error("Error adding to cart:", error);
-      });
+  // In your Products.jsx component, update the handleClick function:
+function handleClick(e) {
+  e.preventDefault();
+  toast.success("Product added to cart");
+  
+  const userEmail = localStorage.getItem("email");
+  if (!userEmail) {
+    toast.error("Please log in to add items to cart");
+    navigate("/");
+    return;
   }
+
+  const product = {
+    productName,
+    price: rate,
+    imgURL,
+    quantity: 1,
+    supplierEmail: "bakul@gmail.com" // You'll need to pass this as a prop
+  };
+
+  fetch("http://localhost:3000/cart", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ userEmail, products: [product] }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Cart updated:", data);
+    })
+    .catch((error) => {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add product to cart");
+    });
+}
 
   return (
     <div className=" h-120 hover:border-1 hover:shadow-2xl  pro rounded-sm  overflow-hidden">

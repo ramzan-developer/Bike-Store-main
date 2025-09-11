@@ -468,3 +468,25 @@ app.get("/supplier-stats/:supplierEmail", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+// Add this endpoint to your server (index.js)
+app.get("/user/:email", async (req, res) => {
+  try {
+    // First try to find in users collection
+    let user = await userModel.findOne({ email: req.params.email });
+    
+    // If not found in users, try in suppliers
+    if (!user) {
+      user = await supplierModel.findOne({ email: req.params.email });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});

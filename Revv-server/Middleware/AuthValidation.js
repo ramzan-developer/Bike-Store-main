@@ -1,0 +1,38 @@
+const Joi = require("joi");
+
+// ✅ Signup validation
+const signupValidation = async (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().min(3).max(100).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(4).max(100).required(),
+    phno: Joi.string().required(),
+    address: Joi.string().required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+// ✅ Login validation
+const loginValidation = async (req, res, next) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(4).max(100).required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+// ✅ Export both properly
+module.exports = {
+  signupValidation,
+  loginValidation,
+};

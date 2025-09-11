@@ -1,390 +1,153 @@
-import { useState, useEffect } from "react"; // React hooks
-import { PackagePlus, Users, Boxes } from "lucide-react"; // Lucide icons
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Nav from "../components/Nav";
 
-const AdminPage = () => {
-  const [product, setProduct] = useState({
-    productName: "",
-    rate: "",
-    category: "",
-    description: "",
-    imgURL: "",
-  });
-
+export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [reviews, setReviews] = useState([]); // New state for reviews
-  const [activeSection, setActiveSection] = useState("addProduct");
-  const [selectedUser, setSelectedUser] = useState(null); // for modal
-  const navigate = useNavigate();
-
-  const BASE_URL = "http://localhost:3000";
+  const [suppliers, setSuppliers] = useState([]);
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/demo`)
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
-      .catch((err) => console.error("Failed to fetch users", err));
-
-    fetch(`${BASE_URL}/products`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error("Failed to fetch products", err));
-
-    fetch(`${BASE_URL}/review`) // Fetch reviews on mount
-      .then((res) => res.json())
-      .then((data) => setReviews(data))
-      .catch((err) => console.error("Failed to fetch reviews", err));
+    fetchData();
   }, []);
 
-  // Existing handlers...
-  const handleChange = (e) => {
-    setProduct({ ...product, [e.target.name]: e.target.value });
-  };
-
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
+  const fetchData = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/products`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Product added!");
-        setProducts([...products, data]);
-        setProduct({
-          productName: "",
-          rate: "",
-          category: "",
-          description: "",
-          imgURL: "",
-        });
-      } else {
-        toast.error("Error: " + data.message);
-      }
+      const [usersRes, suppliersRes, ordersRes] = await Promise.all([
+        axios.get("http://localhost:3000/user"),
+        axios.get("http://localhost:3000/supplier"),
+        axios.get("http://localhost:3000/orders")
+      ]);
+      
+      setUsers(usersRes.data);
+      setSuppliers(suppliersRes.data);
+      setOrders(ordersRes.data);
     } catch (error) {
-      toast.error("Error adding product");
-      console.error(error);
+      console.error("Error fetching data:", error);
     }
   };
 
-  const handleDeleteUser = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-
+  const toggleUserStatus = async (email, currentStatus) => {
     try {
-      const res = await fetch(`${BASE_URL}/demo/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setUsers(users.filter((user) => user._id !== id));
-        toast.success("User deleted!");
-      }
+      await axios.put(`http://localhost:3000/user/${email}`, {
+        isActive: !currentStatus
+      });
+      fetchData();
     } catch (error) {
-      toast.error("Failed to delete user");
-      console.error("Failed to delete user", error);
+      console.error("Error updating user:", error);
     }
   };
 
-  const handleDeleteProduct = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
-
+  const toggleSupplierStatus = async (email, currentStatus) => {
     try {
-      const res = await fetch(`${BASE_URL}/products/${id}`, {
-        method: "DELETE",
+      await axios.put(`http://localhost:3000/supplier/${email}`, {
+        isActive: !currentStatus
       });
-      if (res.ok) {
-        setProducts(products.filter((product) => product._id !== id));
-        toast.success("Product deleted!");
-      }
+      fetchData();
     } catch (error) {
-      toast.error("Failed to delete product");
-      console.error("Failed to delete product", error);
-    }
-  };
-
-  // New: Delete review handler
-  const handleDeleteReview = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this review?")) return;
-
-    try {
-      const res = await fetch(`${BASE_URL}/review/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setReviews(reviews.filter((review) => review._id !== id));
-        toast.success("Review deleted!");
-      }
-    } catch (error) {
-      toast.error("Failed to delete review");
-      console.error("Failed to delete review", error);
+      console.error("Error updating supplier:", error);
     }
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-4xl font-bold mb-10 text-center ">Admin Dashboard</h1>
-
-      {/* Navigation */}
-      <div className="flex flex-wrap justify-center gap-4 mb-10">
-        {[
-          {
-            label: "Add Product",
-            value: "addProduct",
-            icon: <PackagePlus size={18} />,
-          },
-          {
-            label: "View Users",
-            value: "viewUsers",
-            icon: <Users size={18} />,
-          },
-          {
-            label: "View Reviews",
-            value: "viewReviews",
-            icon: <Users size={18} />, // You can replace with a review icon if you want
-          },
-          {
-            label: "View Products",
-            value: "viewProducts",
-            icon: <Boxes size={18} />,
-          },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setActiveSection(tab.value)}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium transition-all duration-200 ${
-              activeSection === tab.value
-                ? "bg-blue-600 text-white shadow-lg"
-                : "bg-white text-blue-600 border border-blue-300 hover:bg-blue-100"
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-
-        {/* Go to Home Page button */}
-        <button
-          onClick={() => navigate("/homepage")}
-          className="flex items-center custom-shadow gap-2 px-5 py-2 rounded-full font-medium transition-all duration-200 bg-green-600 text-white hover:bg-green-700 "
-        >
-          🏠 Home
-        </button>
-      </div>
-
-      {/* Add Product Form */}
-      {activeSection === "addProduct" && (
-        <div className="bg-white p-8 rounded-xl custom-shadow max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6 text-blue-700 flex items-center gap-2">
-            <PackagePlus /> Add New Product
-          </h2>
-          <form onSubmit={handleAddProduct} className="space-y-4">
-            {[
-              { name: "productName", placeholder: "Product Name" },
-              { name: "rate", placeholder: "Rate", type: "number" },
-              { name: "category", placeholder: "Category" },
-              { name: "description", placeholder: "Description" },
-              { name: "imgURL", placeholder: "Image URL" },
-            ].map((field) => (
-              <input
-                key={field.name}
-                name={field.name}
-                type={field.type || "text"}
-                placeholder={field.placeholder}
-                value={product[field.name]}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            ))}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition font-semibold"
-            >
-              + Add Product
-            </button>
-          </form>
+    <div className="bg-cream min-h-screen">
+      <Nav />
+      <div className="p-6">
+        <h1 className="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-2">Total Users</h3>
+            <p className="text-3xl font-bold text-blue-600">{users.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-2">Total Suppliers</h3>
+            <p className="text-3xl font-bold text-green-600">{suppliers.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-2">Total Orders</h3>
+            <p className="text-3xl font-bold text-purple-600">{orders.length}</p>
+          </div>
         </div>
-      )}
 
-      {/* Users Section */}
-      {activeSection === "viewUsers" && (
-        <div className="bg-white p-8 rounded-xl custom-shadow max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6 text-blue-700 flex items-center gap-2">
-            <Users /> All Users
-          </h2>
-          {users.length ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {users.map((u) => (
-                <div
-                  onClick={() => setSelectedUser(u)}
-                  key={u._id}
-                  className="bg-blue-50 border users border-blue-200 rounded-md p-4 text-sm shadow-sm flex justify-between items-center"
-                >
-                  <button className="font-semibold text-blue-600 ">
-                    📧 {u.email}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(u._id)}
-                    className="text-red-500 text-xl font-bold hover:text-red-700"
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Users Table */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Users Management</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">Name</th>
+                    <th className="text-left">Email</th>
+                    <th className="text-left">Status</th>
+                    <th className="text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user._id}>
+                      <td>{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <span className={`px-2 py-1 rounded ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => toggleUserStatus(user.email, user.isActive)}
+                          className={`px-3 py-1 rounded ${user.isActive ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+                        >
+                          {user.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ) : (
-            <p className="text-gray-500">No users found.</p>
-          )}
-        </div>
-      )}
+          </div>
 
-      {/* Products Section */}
-      {activeSection === "viewProducts" && (
-        <div className="bg-white p-8 rounded-xl custom-shadow max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6 text-blue-700 flex items-center gap-2">
-            <Boxes /> All Products
-          </h2>
-          {products.length ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {products.map((p) => (
-                <div
-                  key={p._id}
-                  className="bg-white users border rounded-md p-4 shadow-sm hover:shadow-md transition flex justify-between items-start"
-                >
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {p.productName}
-                    </h3>
-                    <p className="text-sm text-gray-600">₹{p.rate}</p>
-                    <p className="text-xs text-gray-500 mt-1">{p.category}</p>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteProduct(p._id)}
-                    className="text-red-500 text-xl font-bold hover:text-red-700"
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No products found.</p>
-          )}
-        </div>
-      )}
-
-      {/* Reviews Section */}
-      {activeSection === "viewReviews" && (
-        <div className="bg-white p-8 rounded-xl custom-shadow max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6 text-blue-700 flex items-center gap-2">
-            📝 All Reviews
-          </h2>
-          {reviews.length ? (
-            <div className="space-y-4">
-              {reviews.map((r) => (
-                <div
-                  key={r._id}
-                  className="border border-gray-300 rounded-md p-4 hover:scale-103 transition-all transi shadow-sm"
-                >
-                  <div className="flex justify-between items-start">
-                    <p className="text-gray-700 text-lg w-8/10 mb-2">
-                      {r.review}
-                    </p>
-                    <p className="text-sm text-gray-800 font-semibold">
-                      - {r.email}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No reviews found.</p>
-          )}
-        </div>
-      )}
-      {/* Modal for selected user */}
-      {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-40 backdrop-blur-sm px-4">
-          <div className="bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-blue-100 relative animate-fade-in">
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedUser(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-all duration-200"
-              aria-label="Close"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-blue-100 text-blue-700 p-3 rounded-full text-xl shadow-sm">
-                👤
-              </div>
-              <h2 className="text-2xl font-bold text-blue-700 tracking-wide">
-                User Details
-              </h2>
-            </div>
-
-            {/* User Info */}
-            <div className="space-y-4 text-gray-700 text-sm">
-              <div>
-                <p className="font-semibold text-gray-900">Name</p>
-                <p className="text-gray-600">{selectedUser.name || "N/A"}</p>
-              </div>
-
-              <hr className="border-gray-200" />
-
-              <div>
-                <p className="font-semibold text-gray-900">Email</p>
-                <p className="text-gray-600">{selectedUser.email || "N/A"}</p>
-              </div>
-
-              <hr className="border-gray-200" />
-
-              <div>
-                <p className="font-semibold text-gray-900">Address</p>
-                <p className="text-gray-600">{selectedUser.address || "N/A"}</p>
-              </div>
-
-              <hr className="border-gray-200" />
-
-              <div>
-                <p className="font-semibold text-gray-900">Password</p>
-                <p className="text-gray-600">
-                  {selectedUser.password || "••••••"}
-                </p>
-              </div>
-            </div>
-
-            {/* Footer Button */}
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all duration-200 shadow-md"
-              >
-                Close
-              </button>
+          {/* Suppliers Table */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Suppliers Management</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">Name</th>
+                    <th className="text-left">Email</th>
+                    <th className="text-left">Status</th>
+                    <th className="text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {suppliers.map(supplier => (
+                    <tr key={supplier._id}>
+                      <td>{supplier.name}</td>
+                      <td>{supplier.email}</td>
+                      <td>
+                        <span className={`px-2 py-1 rounded ${supplier.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {supplier.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => toggleSupplierStatus(supplier.email, supplier.isActive)}
+                          className={`px-3 py-1 rounded ${supplier.isActive ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+                        >
+                          {supplier.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
-};
-
-export default AdminPage;
+}

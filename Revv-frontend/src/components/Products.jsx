@@ -21,12 +21,14 @@ export default function Products({ productName, rate, description, imgURL }) {
     e.preventDefault();
     toast.success("Product added to cart");
     const userEmail = email;
-    const product = {
-      productName,
-      price: rate,
-      imgURL,
-      quantity: 1,
-    };
+    // In your handleClick function, update the product object:
+const product = {
+  productName,
+  price: rate,
+  imgURL,
+  quantity: 1,
+  supplierEmail: item.supplierEmail // Add this line - you'll need to pass supplierEmail as a prop
+};
 
     fetch("http://localhost:3000/cart", {
       method: "POST",

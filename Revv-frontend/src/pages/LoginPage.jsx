@@ -10,49 +10,69 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   //handle the login button
-  async function handleClick(e) {
-    e.preventDefault();
+async function handleClick(e) {
+  e.preventDefault();
 
-    if (email === "you@gmail.com" && password === "1234") {
-      toast.success("Admin Login Successful!");
-      localStorage.setItem("email", email);
-      localStorage.setItem("role", "admin");
-      navigate("/admindashboard");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:3000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Login successful!");
-        localStorage.setItem("email", data.user.email);
-        localStorage.setItem("role", data.user.role || "user");
-        
-        // Store supplier email if user is a supplier
-        if (data.user.role === "supplier") {
-          localStorage.setItem("supplierEmail", data.user.email);
-        }
-
-        if (data.user.role === "supplier") {
-          navigate("/supplier/dashboard");
-        } else {
-          navigate("/homepage");
-        }
-      } else {
-        toast.error(data.message || "Login failed");
-      }
-    } catch (error) {
-      toast.error("Something went wrong, please try again");
-      console.log(error);
-    }
+  // Admin login check
+  if (email === "you@gmail.com" && password === "1234") {
+    toast.success("Admin Login Successful!");
+    localStorage.setItem("email", email);
+    localStorage.setItem("role", "admin");
+    navigate("/admindashboard");
+    return;
   }
+
+  try {
+    console.log("Attempting login with:", { email, password });
+    
+    const response = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    console.log("Response status:", response.status);
+    
+    // Get the error message from the response
+    const responseData = await response.json().catch(() => null);
+    console.log("Response data:", responseData);
+
+    if (!response.ok) {
+      // This will show us the actual error message from the server
+      throw new Error(responseData?.message || `Server error: ${response.status}`);
+    }
+
+    // If we get here, login was successful
+    const data = responseData;
+    toast.success("Login successful!");
+    
+    localStorage.setItem("email", data.user.email);
+    localStorage.setItem("role", data.user.role || "user");
+    
+    // Store additional user info
+    localStorage.setItem("userName", data.user.name);
+    localStorage.setItem("userAddress", data.user.address);
+    localStorage.setItem("userPhno", data.user.phno);
+    
+    // Store supplier email specifically if user is a supplier
+    if (data.user.role === "supplier") {
+      localStorage.setItem("supplierEmail", data.user.email);
+    }
+
+    if (data.user.role === "supplier") {
+      navigate("/supplier/dashboard");
+    } else if (data.user.role === "admin") {
+      navigate("/admindashboard");
+    } else {
+      navigate("/homepage");
+    }
+  } catch (error) {
+    console.error("Login error details:", error);
+    toast.error(error.message || "Login failed. Please try again.");
+  }
+}
 
   return (
     <div className="login h-screen w-screen grid grid-cols-3  ">

@@ -47,77 +47,110 @@ app.post("/products", async (req, res) => {
   }
 });
 
+
 // app.post("/login", loginValidation, async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
-//     const user = await userModel.findOne({ email });
 
+//     // First, try to find in users collection
+//     let user = await userModel.findOne({ email });
+
+//     // If not found in users, try in suppliers
+//     if (!user) {
+//       user = await supplierModel.findOne({ email });
+      
+//       // If found in suppliers, add role information
+//       if (user) {
+//         user = user.toObject(); // Convert mongoose document to plain object
+//         user.role = "supplier";
+//       }
+//     }
+
+//     // If still not found
 //     if (!user) {
 //       return res.status(400).json({ message: "User not found" });
 //     }
+
+//     // Check password (plain text comparison - consider hashing passwords in future)
 //     if (password !== user.password) {
 //       return res.status(400).json({ message: "Invalid credentials" });
 //     }
 
+//     // Send successful response
 //     res.status(200).json({
 //       message: "Login successful",
 //       user: {
 //         name: user.name,
 //         email: user.email,
-//         role: user.role, // <-- Include this
+//         role: user.role || "user",
+//         address: user.address,
+//         phno: user.phno
 //       },
+//       supplierEmail: user.role === "supplier" ? user.email : null
 //     });
 //   } catch (error) {
 //     res.status(500).json({ message: error.message });
 //   }
 // });
+// In your server index.js, add detailed logging:
 app.post("/login", loginValidation, async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("📧 Login attempt for:", email);
+    console.log("🔑 Password received:", password);
 
     // First, try to find in users collection
     let user = await userModel.findOne({ email });
+    console.log("👤 User found in users collection:", user ? "Yes" : "No");
 
     // If not found in users, try in suppliers
     if (!user) {
       user = await supplierModel.findOne({ email });
+      console.log("🏭 Supplier found:", user ? "Yes" : "No");
+      
+      if (user) {
+        // Convert mongoose document to plain object and add role
+        user = user.toObject();
+        user.role = "supplier";
+        console.log("🔧 Converted supplier to object with role");
+      }
     }
 
     // If still not found
     if (!user) {
+      console.log("❌ User not found in any collection");
       return res.status(400).json({ message: "User not found" });
     }
 
-    // Check password
+    // Check password (plain text comparison)
+    console.log("🔐 Comparing passwords:");
+    console.log("   Input password:", password);
+    console.log("   Stored password:", user.password);
+    
     if (password !== user.password) {
+      console.log("❌ Password mismatch");
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    console.log("✅ Login successful for:", email, "Role:", user.role);
+
     // Send successful response
-    // res.status(200).json({
-    //   message: "Login successful",
-    //   user: {
-    //     name: user.name,
-    //     email: user.email,
-    //     role: user.role || "user", // fallback to 'user' if role is not set
-    //   },
-    // });
     res.status(200).json({
-    message: "Login successful",
-    user: {
-    name: user.name,
-    email: user.email,
-    role: user.role || "user",
-  },
-  supplierEmail: user.role === "supplier" ? user.email : null
-});
-
-
+      message: "Login successful",
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+        address: user.address,
+        phno: user.phno
+      },
+      supplierEmail: user.role === "supplier" ? user.email : null
+    });
   } catch (error) {
+    console.error("💥 Login error:", error);
     res.status(500).json({ message: error.message });
   }
 });
-
 
 app.get("/demo", async (req, res) => {
   try {

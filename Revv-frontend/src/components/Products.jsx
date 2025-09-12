@@ -20,23 +20,30 @@ export default function Products({ productName, rate, description, imgURL, suppl
 
   // Handle the add to cart
   function handleClick(e) {
-    e.preventDefault();
-    
-    if (!email) {
-      toast.error("Please log in to add items to cart");
-      navigate("/");
-      return;
-    }
-    
-    toast.success("Product added to cart");
-    
-    const product = {
-      productName,
-      price: rate,
-      imgURL,
-      quantity: 1,
-      supplierEmail: supplierEmail // Use the prop passed from homepage
-    };
+  e.preventDefault();
+  
+  if (!email) {
+    toast.error("Please log in to add items to cart");
+    navigate("/");
+    return;
+  }
+  
+  // Validate that we have a supplier email
+  if (!supplierEmail) {
+    toast.error("Product supplier information is missing");
+    return;
+  }
+  
+  toast.success("Product added to cart");
+  
+  const product = {
+    productName,
+    price: rate,
+    imgURL,
+    quantity: 1,
+    supplierEmail: supplierEmail // Use the actual prop value
+  };
+
 
     fetch("http://localhost:3000/cart", {
       method: "POST",
@@ -89,5 +96,5 @@ Products.propTypes = {
 
 // Optional: Add default props as a fallback
 Products.defaultProps = {
-  supplierEmail: "bakul@gmail.com",
+  supplierEmail: "", // Empty string as default
 };

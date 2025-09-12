@@ -214,6 +214,15 @@ app.post("/cart", async (req, res) => {
   try {
     const { userEmail, products } = req.body;
 
+    // Validate that all products have supplierEmail
+    const productsMissingSupplier = products.filter(p => !p.supplierEmail);
+    if (productsMissingSupplier.length > 0) {
+      return res.status(400).json({ 
+        message: "Some products are missing supplier information",
+        products: productsMissingSupplier.map(p => p.productName)
+      });
+    }
+
     let cart = await cartModel.findOne({ userEmail });
 
     if (!cart) {
@@ -221,13 +230,13 @@ app.post("/cart", async (req, res) => {
     } else {
       products.forEach((newProduct) => {
         const existingProduct = cart.products.find(
-          (p) => p.productName === newProduct.productName
+          (p) => p.productName === newProduct.productName && p.supplierEmail === newProduct.supplierEmail
         );
 
         if (existingProduct) {
-          existingProduct.quantity += newProduct.quantity; // Increase quantity if product exists
+          existingProduct.quantity += newProduct.quantity;
         } else {
-          cart.products.push(newProduct); // Add new product if not in cart
+          cart.products.push(newProduct);
         }
       });
     }

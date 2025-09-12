@@ -50,38 +50,45 @@ export default function Checkout() {
     }
   }, [email]);
 
-  const createOrder = async () => {
-    try {
-      // Validate required fields
-      if (!email || !address || cartItems.length === 0) {
-        throw new Error("Missing required order information");
-      }
-
-      const orderData = {
-        userEmail: email,
-        products: cartItems.map(item => ({
-          productName: item.productName,
-          price: item.price,
-          quantity: item.quantity,
-          imgURL: item.imgURL,
-          supplierEmail: item.supplierEmail || "bakul@gmail.com"
-        })),
-        totalAmount: total * 0.9 + 5799,
-        address: address,
-        paymentMethod: paymentMethod,
-        paymentStatus: "completed",
-        status: "pending"
-      };
-      
-      console.log("Submitting order:", orderData);
-      
-      const response = await axios.post("http://localhost:3000/orders", orderData);
-      return response.data;
-    } catch (error) {
-      console.error("Error creating order:", error);
-      throw error;
+const createOrder = async () => {
+  try {
+    // Validate required fields
+    if (!email || !address || cartItems.length === 0) {
+      throw new Error("Missing required order information");
     }
-  };
+
+    // Validate that all cart items have supplier emails
+    const itemsMissingSupplier = cartItems.filter(item => !item.supplierEmail);
+    if (itemsMissingSupplier.length > 0) {
+      console.error("Items missing supplier info:", itemsMissingSupplier);
+      throw new Error("Some products are missing supplier information. Please contact support.");
+    }
+
+    const orderData = {
+      userEmail: email,
+      products: cartItems.map(item => ({
+        productName: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+        imgURL: item.imgURL,
+        supplierEmail: item.supplierEmail // ✅ FIXED - No fallback to bakul
+      })),
+      totalAmount: total * 0.9 + 5799,
+      address: address,
+      paymentMethod: paymentMethod,
+      paymentStatus: "completed", 
+      status: "pending"
+    };
+    
+    console.log("Submitting order with correct suppliers:", orderData.products);
+    
+    const response = await axios.post("http://localhost:3000/orders", orderData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw error;
+  }
+};
 
   return (
     <>

@@ -25,6 +25,10 @@ const cartSchema = new Schema({
                 required: true,
                 default: 1,
             },
+            supplierEmail: { // ✅ ADD THIS MISSING FIELD
+                type: String,
+                required: true,
+            },
         },
     ],
 });

@@ -1,10 +1,8 @@
 import { useState } from "react";
-import RegisterButton from "../components/RegisterButton";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   //the states
   const [name, setName] = useState("");
   const [phno, setPhno] = useState("");
@@ -49,80 +47,139 @@ export default function LoginPage() {
 
   //the return code
   return (
-    <div className="login h-screen w-screen grid grid-cols-3  ">
-      <div className="col-span-2 grid items-center justify-center ">
-        <form action="" className="bg-gray-50 rounded-2xl  p-9 pb-8">
-          <h1 className="text-3xl mb-6 font-extrabold text-center text">
-            Sign Up
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
+      {/* Register Container */}
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="bg-blue-600 py-4 px-6 text-center">
+          <h1 className="text-2xl font-bold text-white">
+            Bike<span className="text-yellow-400">Verse</span>
+            <span className="ml-1" role="img" aria-label="bicycle">🚴</span>
           </h1>
+          <p className="text-yellow-200 mt-1">Create your account</p>
+        </div>
 
-          <h2 className="font-bold">Name:</h2>
-          <input
-            className="border-2 p-2 w-80 border-b-gray-900 mb-6"
-            required
-            type="text"
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter Name"
-            value={name}
-          />
+        {/* Registration Form */}
+        <div className="px-8 py-6">
+          <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Sign Up</h2>
+          
+          <form onSubmit={handleClick}>
+            {/* Name Input */}
+            <div className="mb-4">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
 
-          <h2 className="font-bold">Phone Number:</h2>
-          <input
-            className="border-2 p-2 w-80 border-b-gray-900 mb-6"
-            required
-            type="text"
-            onChange={(e) => setPhno(e.target.value)}
-            placeholder="Enter Phone number"
-            value={phno}
-          />
+            {/* Phone Number Input */}
+            <div className="mb-4">
+              <label htmlFor="phno" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
+              <input
+                id="phno"
+                type="text"
+                value={phno}
+                onChange={(e) => setPhno(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
 
-          <h2 className="font-bold">Email:</h2>
-          <input
-            className="border-2 p-2 w-80 border-b-gray-900 mb-6"
-            required
-            type="email"
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter Email"
-            value={email}
-          />
+            {/* Email Input */}
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
 
-          <h2 className="font-bold">Address:</h2>
-          <input
-            className="border-2 p-2 w-80 border-b-gray-900 mb-6"
-            required
-            type="text"
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Enter Delivery Address"
-            value={address}
-          />
+            {/* Address Input */}
+            <div className="mb-4">
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                Delivery Address
+              </label>
+              <input
+                id="address"
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter your delivery address"
+                required
+              />
+            </div>
 
-          <h2 className="font-bold">Create Password: </h2>
-          <input
-            className="border-2 p-2 w-80 border-b-gray-900 mb-6"
-            required
-            type="Password"
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter Password"
-            value={password}
-          />
+            {/* Password Input */}
+            <div className="mb-6">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Create Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
 
-          <div
-            onClick={(e) => handleClick(e)}
-            className="flex mb-5 justify-center"
-          >
-            <RegisterButton />
-          </div>
-          <div className="h-0.5 ml-5 w-72 bg-gray-900"></div>
-          <div className="flex mt-3 justify-center">
-            <h5 className="mr-2">Already have an account?</h5>
-            <Link
-              className="hover:underline font-bold hover:text-blue-800"
-              to={"/"}
+            {/* Register Button */}
+            <button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-transform"
             >
-              LogIn
+              Create Account
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative flex items-center my-6">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink mx-4 text-gray-500 text-sm">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          {/* Login Link */}
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Already have an account?</p>
+            <Link
+              to="/"
+              className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+            >
+              Login to Your Account
             </Link>
           </div>
-        </form>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-100 py-4 px-6 text-center">
+          <p className="text-xs text-gray-600">
+            By creating an account, you agree to BikeVerse's <br />
+            <a href="#" className="text-blue-600 hover:underline">Terms of Use</a> and{" "}
+            <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
+          </p>
+        </div>
       </div>
     </div>
   );

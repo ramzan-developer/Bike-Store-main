@@ -17,17 +17,31 @@ const signupValidation = async (req, res, next) => {
   next();
 };
 
+
+
 // ✅ Login validation
 const loginValidation = async (req, res, next) => {
   const schema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(4).max(100).required(),
+    email: Joi.string().email().required().messages({
+      'string.email': 'Please enter a valid email address',
+      'any.required': 'Email is required'
+    }),
+    password: Joi.string().min(4).max(100).required().messages({
+      'string.min': 'Password must be at least 4 characters long',
+      'any.required': 'Password is required'
+    }),
   });
 
-  const { error } = schema.validate(req.body);
+  const { error } = schema.validate(req.body, { abortEarly: false });
+  
   if (error) {
-    return res.status(400).json({ message: error.details[0].message });
+    console.log("Validation error:", error.details);
+    return res.status(400).json({ 
+      message: "Validation failed",
+      details: error.details.map(detail => detail.message)
+    });
   }
+  
   next();
 };
 

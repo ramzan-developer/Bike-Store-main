@@ -7,108 +7,109 @@ const SupplierManageBikes = () => {
   const BASE_URL = "http://localhost:3000";
 
   const [bike, setBike] = useState({
-  productName: "",
-  rate: "",
-  category: "",
-  description: "",
-  imgURL: "",
-  supplierEmail: localStorage.getItem("supplierEmail") || "",
-});
-
+    productName: "",
+    rate: "",
+    category: "",
+    description: "",
+    imgURL: "",
+    supplierEmail: localStorage.getItem("email") || "",
+  });
 
   const [bikes, setBikes] = useState([]);
   const [editId, setEditId] = useState(null);
-useEffect(() => {
-  const supplierEmail = localStorage.getItem("supplierEmail");
-  if (!supplierEmail) return;
+  const [supplierEmail, setSupplierEmail] = useState("");
 
-  fetch(`${BASE_URL}/products`)
-    .then((res) => res.json())
-    .then((data) => {
-      // only show this supplier’s bikes
-      const myBikes = data.filter((b) => b.supplierEmail === supplierEmail);
+  useEffect(() => {
+    const email = localStorage.getItem("email");
+    if (!email) {
+      toast.error("Please log in as a supplier");
+      navigate("/");
+      return;
+    }
+    setSupplierEmail(email);
+    setBike(prev => ({ ...prev, supplierEmail: email }));
+    fetchBikes(email);
+  }, []);
+
+  const fetchBikes = async (email) => {
+    try {
+      const response = await fetch(`${BASE_URL}/products`);
+      if (!response.ok) throw new Error("Failed to fetch products");
+      
+      const data = await response.json();
+      // Filter to show only this supplier's bikes
+      const myBikes = data.filter(b => b.supplierEmail === email);
       setBikes(myBikes);
-    })
-    .catch((err) => console.error("Fetch bikes error:", err));
-}, []);
-
-// ---- handleChange: cast rate to Number for state ----
-const handleChange = (e) => {
-  const { name, value } = e.target;
-  setBike((prev) => ({
-    ...prev,
-    [name]: name === "rate" ? value : value, // keep controlled input; convert on submit
-  }));
-};
-
-// ---- handleSubmit: validate, cast rate, better error handling ----
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const supplierEmail = localStorage.getItem("supplierEmail");
-  if (!supplierEmail) {
-    toast.error("Please log in as a supplier (supplierEmail missing).");
-    return;
-  }
-
-  // prepare payload and cast rate
-  const payload = {
-    ...bike,
-    supplierEmail,
-    rate: Number(bike.rate), // cast here
+    } catch (error) {
+      console.error("Fetch bikes error:", error);
+      toast.error("Failed to load bikes");
+    }
   };
 
-  // simple frontend validation before sending
-  if (
-    !payload.productName ||
-    !payload.category ||
-    !payload.description ||
-    !payload.imgURL ||
-    isNaN(payload.rate)
-  ) {
-    toast.error("Please fill all required fields (name, category, description, image, price).");
-    return;
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBike(prev => ({
+      ...prev,
+      [name]: name === "rate" ? Number(value) : value,
+    }));
+  };
 
-  const method = editId ? "PUT" : "POST";
-  const url = editId ? `${BASE_URL}/products/${editId}` : `${BASE_URL}/products`;
-
-  try {
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    // read server error body to show clear message
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}));
-      throw new Error(errBody.message || "Request failed");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!supplierEmail) {
+      toast.error("Please log in as a supplier");
+      return;
     }
 
-    const data = await res.json();
+    // Validate required fields
+    if (!bike.productName || !bike.category || !bike.rate || !bike.description) {
+      toast.error("Please fill all required fields");
+      return;
+    }
 
-    toast.success(`Bike ${editId ? "updated" : "added"} successfully`);
+    const payload = {
+      ...bike,
+      rate: Number(bike.rate),
+      supplierEmail: supplierEmail
+    };
 
-    // reset form (keep supplierEmail from localStorage)
-    setBike({
-      productName: "",
-      rate: "",
-      category: "",
-      description: "",
-      imgURL: "",
-      supplierEmail: supplierEmail || "",
-    });
+    const method = editId ? "PUT" : "POST";
+    const url = editId ? `${BASE_URL}/products/${editId}` : `${BASE_URL}/products`;
 
-    setEditId(null);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    setBikes((prev) => (editId ? prev.map((b) => (b._id === editId ? data : b)) : [...prev, data]));
-  } catch (err) {
-    // show the actual server error message
-    toast.error(err.message || "Something went wrong");
-    console.error("Add/update bike error:", err);
-  }
-};
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Request failed");
+      }
+
+      const data = await res.json();
+      toast.success(`Bike ${editId ? "updated" : "added"} successfully`);
+
+      // Reset form
+      setBike({
+        productName: "",
+        rate: "",
+        category: "",
+        description: "",
+        imgURL: "",
+        supplierEmail: supplierEmail,
+      });
+      setEditId(null);
+
+      // Refresh bike list
+      fetchBikes(supplierEmail);
+    } catch (error) {
+      console.error("Add/update bike error:", error);
+      toast.error(error.message || "Something went wrong");
+    }
+  };
 
   const handleEdit = (bike) => {
     setBike(bike);
@@ -116,18 +117,20 @@ const handleSubmit = async (e) => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
+    if (!window.confirm("Are you sure you want to delete this bike?")) return;
+    
     try {
       const res = await fetch(`${BASE_URL}/products/${id}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to delete bike");
 
       setBikes(bikes.filter((b) => b._id !== id));
-      toast.success("Bike deleted");
-    } catch (err) {
-      toast.error("Delete failed");
+      toast.success("Bike deleted successfully");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error("Failed to delete bike");
     }
   };
 
@@ -136,7 +139,7 @@ const handleSubmit = async (e) => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-blue-700">Manage My Bikes</h1>
         <button
-          onClick={() => navigate("/supplier-dashboard")}
+          onClick={() => navigate("/supplier/dashboard")}
           className="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
         >
           ← Back to Dashboard
@@ -156,7 +159,7 @@ const handleSubmit = async (e) => {
             name="productName"
             value={bike.productName}
             onChange={handleChange}
-            placeholder="Bike Name"
+            placeholder="Bike Name *"
             required
             className="p-2 border rounded"
           />
@@ -164,17 +167,16 @@ const handleSubmit = async (e) => {
             name="category"
             value={bike.category}
             onChange={handleChange}
-            placeholder="Category"
+            placeholder="Category *"
             required
             className="p-2 border rounded"
           />
-          
           <input
             name="rate"
             type="number"
             value={bike.rate}
             onChange={handleChange}
-            placeholder="Price"
+            placeholder="Price *"
             required
             className="p-2 border rounded"
           />
@@ -189,12 +191,14 @@ const handleSubmit = async (e) => {
             name="description"
             value={bike.description}
             onChange={handleChange}
-            placeholder="Description"
+            placeholder="Description *"
+            required
             className="p-2 border rounded"
+            rows="3"
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold"
           >
             {editId ? "Update Bike" : "Add Bike"}
           </button>
@@ -204,52 +208,55 @@ const handleSubmit = async (e) => {
       {/* Bike Table */}
       <div className="bg-white p-6 rounded-xl shadow max-w-6xl mx-auto overflow-x-auto">
         <h2 className="text-xl font-semibold mb-4 text-blue-600">
-          My Bikes List
+          My Bikes List ({bikes.length})
         </h2>
-        <table className="min-w-full table-auto text-left border-collapse">
-          <thead>
-            <tr className="bg-blue-600 text-white">
-              <th className="p-2">Image</th>
-              <th className="p-2">Name</th>
-              <th className="p-2">Category</th>
-              <th className="p-2">Price</th>
-              <th className="p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bikes.map((b) => (
-              <tr key={b._id} className="border-t hover:bg-gray-50">
-                <td className="p-2">
-                  <img src={b.imgURL} alt="bike" className="h-16 w-auto" />
-                </td>
-                <td className="p-2 font-medium">{b.productName}</td>
-                <td className="p-2">{b.category}</td>
-                <td className="p-2">₹ {b.rate}</td>
-                <td className="p-2 space-x-2">
-                  <button
-                    onClick={() => handleEdit(b)}
-                    className="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(b._id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </td>
+        {bikes.length === 0 ? (
+          <p className="text-center text-gray-500 py-4">No bikes found. Add your first bike above.</p>
+        ) : (
+          <table className="min-w-full table-auto text-left border-collapse">
+            <thead>
+              <tr className="bg-blue-600 text-white">
+                <th className="p-2">Image</th>
+                <th className="p-2">Name</th>
+                <th className="p-2">Category</th>
+                <th className="p-2">Price</th>
+                <th className="p-2">Actions</th>
               </tr>
-            ))}
-            {!bikes.length && (
-              <tr>
-                <td colSpan="5" className="text-center text-gray-500 p-4">
-                  No bikes found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {bikes.map((b) => (
+                <tr key={b._id} className="border-t hover:bg-gray-50">
+                  <td className="p-2">
+                    {b.imgURL ? (
+                      <img src={b.imgURL} alt={b.productName} className="h-16 w-auto object-cover" />
+                    ) : (
+                      <div className="h-16 w-16 bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500">No Image</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-2 font-medium">{b.productName}</td>
+                  <td className="p-2">{b.category}</td>
+                  <td className="p-2">₹{b.rate.toLocaleString("en-IN")}</td>
+                  <td className="p-2 space-x-2">
+                    <button
+                      onClick={() => handleEdit(b)}
+                      className="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(b._id)}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

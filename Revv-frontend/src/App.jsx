@@ -6,29 +6,43 @@ import CartPage from "./pages/CartPage";
 import ReviewPage from "./pages/ReviewPage";
 import Checkout from "./pages/Checkout";
 import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
+
 import SupplierRegister from "./pages/SupplierRegister";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import SupplierManageBikes from "./pages/SupplierManageBikes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+// Add these imports
+import OrderHistory from "./pages/OrderHistory";
+import AdminDashboard from "./pages/AdminDashboard";
+import SupplierOrders from "./pages/SupplierOrders";
+import Home from "./pages/Home";
+
+
+
 
 const App = () => {
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/Login" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/supplier-register" element={<SupplierRegister />} />
           <Route path="/homepage" element={<Homepage />} />
-          <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
-          <Route path="/supplier/manage-bikes" element={<SupplierManageBikes />} />
+          {/* <Route path="/supplier-dashboard" element={<SupplierDashboard />} /> */}
+          {/* <Route path="/supplier/manage-bikes" element={<SupplierManageBikes />} /> */}
           <Route path="/cart" element={<CartPage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/adminlogin" element={<AdminLogin />} />
           <Route path="/admindashboard" element={<AdminDashboard />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/supplier/dashboard" element={<SupplierDashboard />} />
+          <Route path="/supplier/manage-bikes" element={<SupplierManageBikes />} />
+          <Route path="/supplier/orders" element={<SupplierOrders />} />
         </Routes>
       </BrowserRouter>
       <ToastContainer

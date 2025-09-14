@@ -7,7 +7,11 @@ const supplierSchema = new mongoose.Schema({
   phno: { type: String, required: true },
   address: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: String, default: "supplier" }
+  role: { type: String, default: "supplier" },
+  isActive: {
+  type: Boolean,
+  default: true
+}
 });
 
 module.exports = mongoose.model("suppliers", supplierSchema);

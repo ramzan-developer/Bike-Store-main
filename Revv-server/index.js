@@ -47,77 +47,110 @@ app.post("/products", async (req, res) => {
   }
 });
 
+
 // app.post("/login", loginValidation, async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
-//     const user = await userModel.findOne({ email });
 
+//     // First, try to find in users collection
+//     let user = await userModel.findOne({ email });
+
+//     // If not found in users, try in suppliers
+//     if (!user) {
+//       user = await supplierModel.findOne({ email });
+      
+//       // If found in suppliers, add role information
+//       if (user) {
+//         user = user.toObject(); // Convert mongoose document to plain object
+//         user.role = "supplier";
+//       }
+//     }
+
+//     // If still not found
 //     if (!user) {
 //       return res.status(400).json({ message: "User not found" });
 //     }
+
+//     // Check password (plain text comparison - consider hashing passwords in future)
 //     if (password !== user.password) {
 //       return res.status(400).json({ message: "Invalid credentials" });
 //     }
 
+//     // Send successful response
 //     res.status(200).json({
 //       message: "Login successful",
 //       user: {
 //         name: user.name,
 //         email: user.email,
-//         role: user.role, // <-- Include this
+//         role: user.role || "user",
+//         address: user.address,
+//         phno: user.phno
 //       },
+//       supplierEmail: user.role === "supplier" ? user.email : null
 //     });
 //   } catch (error) {
 //     res.status(500).json({ message: error.message });
 //   }
 // });
+// In your server index.js, add detailed logging:
 app.post("/login", loginValidation, async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("📧 Login attempt for:", email);
+    console.log("🔑 Password received:", password);
 
     // First, try to find in users collection
     let user = await userModel.findOne({ email });
+    console.log("👤 User found in users collection:", user ? "Yes" : "No");
 
     // If not found in users, try in suppliers
     if (!user) {
       user = await supplierModel.findOne({ email });
+      console.log("🏭 Supplier found:", user ? "Yes" : "No");
+      
+      if (user) {
+        // Convert mongoose document to plain object and add role
+        user = user.toObject();
+        user.role = "supplier";
+        console.log("🔧 Converted supplier to object with role");
+      }
     }
 
     // If still not found
     if (!user) {
+      console.log("❌ User not found in any collection");
       return res.status(400).json({ message: "User not found" });
     }
 
-    // Check password
+    // Check password (plain text comparison)
+    console.log("🔐 Comparing passwords:");
+    console.log("   Input password:", password);
+    console.log("   Stored password:", user.password);
+    
     if (password !== user.password) {
+      console.log("❌ Password mismatch");
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    console.log("✅ Login successful for:", email, "Role:", user.role);
+
     // Send successful response
-    // res.status(200).json({
-    //   message: "Login successful",
-    //   user: {
-    //     name: user.name,
-    //     email: user.email,
-    //     role: user.role || "user", // fallback to 'user' if role is not set
-    //   },
-    // });
     res.status(200).json({
-    message: "Login successful",
-    user: {
-    name: user.name,
-    email: user.email,
-    role: user.role || "user",
-  },
-  supplierEmail: user.role === "supplier" ? user.email : null
-});
-
-
+      message: "Login successful",
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+        address: user.address,
+        phno: user.phno
+      },
+      supplierEmail: user.role === "supplier" ? user.email : null
+    });
   } catch (error) {
+    console.error("💥 Login error:", error);
     res.status(500).json({ message: error.message });
   }
 });
-
 
 app.get("/demo", async (req, res) => {
   try {
@@ -181,6 +214,15 @@ app.post("/cart", async (req, res) => {
   try {
     const { userEmail, products } = req.body;
 
+    // Validate that all products have supplierEmail
+    const productsMissingSupplier = products.filter(p => !p.supplierEmail);
+    if (productsMissingSupplier.length > 0) {
+      return res.status(400).json({ 
+        message: "Some products are missing supplier information",
+        products: productsMissingSupplier.map(p => p.productName)
+      });
+    }
+
     let cart = await cartModel.findOne({ userEmail });
 
     if (!cart) {
@@ -188,13 +230,13 @@ app.post("/cart", async (req, res) => {
     } else {
       products.forEach((newProduct) => {
         const existingProduct = cart.products.find(
-          (p) => p.productName === newProduct.productName
+          (p) => p.productName === newProduct.productName && p.supplierEmail === newProduct.supplierEmail
         );
 
         if (existingProduct) {
-          existingProduct.quantity += newProduct.quantity; // Increase quantity if product exists
+          existingProduct.quantity += newProduct.quantity;
         } else {
-          cart.products.push(newProduct); // Add new product if not in cart
+          cart.products.push(newProduct);
         }
       });
     }
@@ -359,6 +401,216 @@ const supplier = await supplierModel.create(req.body);
 
 
     res.status(200).json({ message: "Supplier registered successfully", supplier });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// Order routes
+const orderModel = require("./Models/Order");
+
+// Create order
+app.post("/orders", async (req, res) => {
+  try {
+    const order = await orderModel.create(req.body);
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get user orders
+app.get("/orders/:userEmail", async (req, res) => {
+  try {
+    const orders = await orderModel.find({ userEmail: req.params.userEmail }).sort({ orderDate: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get all orders (for admin)
+app.get("/orders", async (req, res) => {
+  try {
+    const orders = await orderModel.find().sort({ orderDate: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update order status
+app.put("/orders/:id", async (req, res) => {
+  try {
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get supplier orders
+app.get("/supplier-orders/:supplierEmail", async (req, res) => {
+  try {
+    const orders = await orderModel.find({
+      "products.supplierEmail": req.params.supplierEmail
+    }).sort({ orderDate: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get statistics for supplier dashboard
+app.get("/supplier-stats/:supplierEmail", async (req, res) => {
+  try {
+    const supplierEmail = req.params.supplierEmail;
+    
+    // Count bikes
+    const bikesCount = await productModel.countDocuments({ supplierEmail });
+    
+    // Count orders
+    const ordersCount = await orderModel.countDocuments({
+      "products.supplierEmail": supplierEmail
+    });
+    
+    // Calculate total sales
+    const orders = await orderModel.find({
+      "products.supplierEmail": supplierEmail,
+      paymentStatus: "completed"
+    });
+    
+    let totalSales = 0;
+    orders.forEach(order => {
+      order.products.forEach(product => {
+        if (product.supplierEmail === supplierEmail) {
+          totalSales += product.price * product.quantity;
+        }
+      });
+    });
+    
+    // Count pending orders
+    const pendingOrders = await orderModel.countDocuments({
+      "products.supplierEmail": supplierEmail,
+      status: "pending"
+    });
+    
+    res.status(200).json({
+      bikesCount,
+      ordersCount,
+      totalSales,
+      pendingOrders
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// Add this endpoint to your server (index.js)
+app.get("/user/:email", async (req, res) => {
+  try {
+    // First try to find in users collection
+    let user = await userModel.findOne({ email: req.params.email });
+    
+    // If not found in users, try in suppliers
+    if (!user) {
+      user = await supplierModel.findOne({ email: req.params.email });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// Get supplier orders
+app.get("/supplier-orders/:supplierEmail", async (req, res) => {
+  try {
+    const orders = await orderModel.find({
+      "products.supplierEmail": req.params.supplierEmail
+    }).sort({ orderDate: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update order
+app.put("/orders/:id", async (req, res) => {
+  try {
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get all suppliers
+app.get("/supplier", async (req, res) => {
+  try {
+    const suppliers = await supplierModel.find();
+    res.status(200).json(suppliers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete supplier
+app.delete("/supplier/:id", async (req, res) => {
+  try {
+    const deletedSupplier = await supplierModel.findByIdAndDelete(req.params.id);
+    if (!deletedSupplier) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+    res.status(200).json({ message: "Supplier deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update supplier status
+app.put("/supplier/:id", async (req, res) => {
+  try {
+    const updatedSupplier = await supplierModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.status(200).json(updatedSupplier);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update user status
+app.put("/user/:id", async (req, res) => {
+  try {
+    const updatedUser = await userModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

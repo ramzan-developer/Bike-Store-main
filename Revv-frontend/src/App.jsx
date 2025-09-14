@@ -16,8 +16,9 @@ import "react-toastify/dist/ReactToastify.css";
 import OrderHistory from "./pages/OrderHistory";
 import AdminDashboard from "./pages/AdminDashboard";
 import SupplierOrders from "./pages/SupplierOrders";
+import Home from "./pages/Home";
 
-// Add these routes inside your Routes component
+
 
 
 const App = () => {
@@ -25,7 +26,8 @@ const App = () => {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/Login" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/supplier-register" element={<SupplierRegister />} />
           <Route path="/homepage" element={<Homepage />} />

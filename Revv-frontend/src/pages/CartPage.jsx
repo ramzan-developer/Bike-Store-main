@@ -98,7 +98,7 @@ export default function CartPage() {
   const formattedTotal = total.toLocaleString("en-IN");
 
   return (
-    <div className="bg-cream min-h-screen">
+    <div className="bg-white min-h-screen">
       <Nav cartCount={products.length} />
       <div className="min-h-166 p-5">
         {products.length === 0 ? (

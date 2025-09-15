@@ -19,7 +19,23 @@ const SupplierDashboard = () => {
     totalSales: 0,
     pendingOrders: 0
   });
+  const [salesByCategory, setSalesByCategory] = useState([]); // Add state for sales by category
   const [loading, setLoading] = useState(true);
+
+  // Add function to fetch supplier-specific sales by category
+  const fetchSalesByCategory = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/supplier-sales-by-category/${supplierEmail}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSalesByCategory(data);
+      } else {
+        console.error("Failed to fetch sales by category data");
+      }
+    } catch (error) {
+      console.error("Failed to fetch sales data:", error);
+    }
+  };
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -44,6 +60,9 @@ const SupplierDashboard = () => {
         } else {
           console.error("Failed to fetch stats");
         }
+
+        // Fetch sales by category data
+        await fetchSalesByCategory();
       } catch (err) {
         console.error("Failed to fetch supplier dashboard data:", err);
       } finally {
@@ -100,14 +119,33 @@ const SupplierDashboard = () => {
               Manage Bikes
             </button>
             <button 
-  onClick={() => navigate("/supplier/orders")}
-  className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
->
-  View Orders
-</button>
+              onClick={() => navigate("/supplier/orders")}
+              className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
+            >
+              View Orders
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Add a section to display the sales by category */}
+      {salesByCategory.length > 0 && (
+        <div className="max-w-5xl mx-auto mt-8 px-4">
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <h3 className="text-xl font-semibold mb-4">Sales by Category</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {salesByCategory.map((item) => (
+                <div key={item._id} className="bg-gray-100 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-700">{item.categoryName}</h4>
+                  <p className="text-sm">Sales: ₹{item.totalSales?.toLocaleString("en-IN") || 0}</p>
+                  <p className="text-sm">Orders: {item.totalOrders || 0}</p>
+                  <p className="text-sm">Quantity: {item.totalQuantity || 0}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

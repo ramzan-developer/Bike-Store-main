@@ -11,12 +11,10 @@ const supplierModel = require("./Models/Supplier");
 const { signupValidation, loginValidation } = require("./Middleware/AuthValidation");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-// const supplierRoutes = require('./Routes/supplier');
 
-// app.use('/api/supplier', supplierRoutes); // 👈 this matches your frontend call
+const categoryModel = require("./Models/Category");
 
 
-// import SupplierRegister from "./pages/SupplierRegister";
 require("dotenv").config();
 require("./Models/db");
 const app = express();
@@ -611,6 +609,192 @@ app.put("/user/:id", async (req, res) => {
       { new: true }
     );
     res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+//--------------------15/09/2025------------------
+
+
+// Get all categories (accessible to all)
+app.get("/categories", async (req, res) => {
+  try {
+    const categories = await categoryModel.find({ isActive: true });
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get all categories including inactive (admin only)
+app.get("/categories/all", async (req, res) => {
+  try {
+    const categories = await categoryModel.find();
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Create category (admin only)
+app.post("/categories", async (req, res) => {
+  try {
+    const { name, description, createdBy } = req.body;
+    
+    // Check if category already exists
+    const existingCategory = await categoryModel.findOne({ name });
+    if (existingCategory) {
+      return res.status(400).json({ message: "Category already exists" });
+    }
+    
+    const category = await categoryModel.create({ name, description, createdBy });
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update category (admin only)
+app.put("/categories/:id", async (req, res) => {
+  try {
+    const { name, description, isActive } = req.body;
+    const updatedCategory = await categoryModel.findByIdAndUpdate(
+      req.params.id,
+      { name, description, isActive },
+      { new: true }
+    );
+    
+    if (!updatedCategory) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    
+    res.status(200).json(updatedCategory);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete category (admin only)
+app.delete("/categories/:id", async (req, res) => {
+  try {
+    // Check if any products are using this category
+    const productsWithCategory = await productModel.countDocuments({ category: req.params.id });
+    if (productsWithCategory > 0) {
+      return res.status(400).json({ 
+        message: "Cannot delete category. There are products associated with it." 
+      });
+    }
+    
+    const deletedCategory = await categoryModel.findByIdAndDelete(req.params.id);
+    if (!deletedCategory) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    
+    res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get sales by category (for reports)
+app.get("/sales-by-category", async (req, res) => {
+  try {
+    const salesByCategory = await orderModel.aggregate([
+      { $unwind: "$products" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.productName",
+          foreignField: "productName",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $group: {
+          _id: "$productDetails.category",
+          totalSales: { $sum: { $multiply: ["$products.price", "$products.quantity"] } },
+          totalOrders: { $sum: 1 },
+          totalQuantity: { $sum: "$products.quantity" }
+        }
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "_id",
+          foreignField: "_id",
+          as: "categoryDetails"
+        }
+      },
+      { $unwind: "$categoryDetails" },
+      {
+        $project: {
+          categoryName: "$categoryDetails.name",
+          totalSales: 1,
+          totalOrders: 1,
+          totalQuantity: 1
+        }
+      }
+    ]);
+    
+    res.status(200).json(salesByCategory);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// Get sales by category for a specific supplier
+app.get("/supplier-sales-by-category/:supplierEmail", async (req, res) => {
+  try {
+    const { supplierEmail } = req.params;
+    
+    const salesByCategory = await orderModel.aggregate([
+      { $unwind: "$products" },
+      {
+        $match: {
+          "products.supplierEmail": supplierEmail
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.productName",
+          foreignField: "productName",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $group: {
+          _id: "$productDetails.category",
+          totalSales: { $sum: { $multiply: ["$products.price", "$products.quantity"] } },
+          totalOrders: { $sum: 1 },
+          totalQuantity: { $sum: "$products.quantity" }
+        }
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "_id",
+          foreignField: "_id",
+          as: "categoryDetails"
+        }
+      },
+      { $unwind: "$categoryDetails" },
+      {
+        $project: {
+          categoryName: "$categoryDetails.name",
+          totalSales: 1,
+          totalOrders: 1,
+          totalQuantity: 1
+        }
+      }
+    ]);
+    
+    res.status(200).json(salesByCategory);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -17,6 +17,7 @@ import OrderHistory from "./pages/OrderHistory";
 import AdminDashboard from "./pages/AdminDashboard";
 import SupplierOrders from "./pages/SupplierOrders";
 import Home from "./pages/Home";
+import About from './pages/About';
 
 
 
@@ -27,6 +28,7 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
           <Route path="/Login" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/supplier-register" element={<SupplierRegister />} />

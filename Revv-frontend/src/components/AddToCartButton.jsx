@@ -16,7 +16,7 @@ const StyledWrapper = styled.div`
     letter-spacing: 1px;
     font-weight: 500;
     color: #fff;
-    background-color: #52b788;
+    background-color: #0452FB;
     border: none;
     border-radius: 2px;
     transition: all 0.3s ease 0s;
@@ -25,7 +25,7 @@ const StyledWrapper = styled.div`
   }
 
   button:hover {
-    background-color: #23c483;
+    background-color: #0343CE;
     box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4);
     color: #fff;
     transform: translateY(-7px);

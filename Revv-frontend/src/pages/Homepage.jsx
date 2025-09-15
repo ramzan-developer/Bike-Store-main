@@ -2,7 +2,7 @@ import Nav from "../components/Nav";
 import { useEffect, useState } from "react";
 import Products from "../components/Products";
 import CategoryFilter from "../components/CategoryFilter";
-import SearchButton from "../components/SearchButton"; // Import SearchButton
+import SearchButton from "../components/SearchButton";
 
 export default function Homepage() {
   const [email, setEmail] = useState(null);
@@ -20,7 +20,7 @@ export default function Homepage() {
     }
     setUserName(storedName);
     fetchProducts();
-  }, []); // Remove selectedCategory from dependencies
+  }, []);
 
   // Fetch all products
   const fetchProducts = async () => {
@@ -45,12 +45,13 @@ export default function Homepage() {
   const applyFilters = (productsToFilter, category, query) => {
     let filtered = [...productsToFilter];
     
-    // Apply category filter
+    // Apply category filter - only if a category is selected (not empty)
     if (category) {
       filtered = filtered.filter(product => 
         product.category && product.category._id === category
       );
     }
+    // If category is empty (All Categories), don't filter by category
     
     // Apply search filter
     if (query) {
@@ -63,10 +64,10 @@ export default function Homepage() {
     setFilteredProducts(filtered);
   };
 
-  const handleCategoryChange = (categoryId) => {
-    setSelectedCategory(categoryId);
-    applyFilters(products, categoryId, searchQuery);
-  };
+  // const handleCategoryChange = (categoryId) => {
+  //   setSelectedCategory(categoryId);
+  //   applyFilters(products, categoryId, searchQuery);
+  // };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -92,32 +93,13 @@ export default function Homepage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Search and Filter Section */}
-        {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h2 className="text-2xl font-bold text-gray-800">
-            Latest Bikes
-          </h2>
-          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-            <div className="w-full md:w-64">
-              <SearchButton onSearch={handleSearch} />
-            </div>
-            <div className="w-full md:w-64">
-              <CategoryFilter onCategoryChange={handleCategoryChange} />
-            </div>
-          </div>
-        </div> */}
-        <div className="flex justify-between items-center mb-6">
-        <div className="flex mb-6">
-          <div className="w-full max-w-md">
+        <div className="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+          <div className="w-full md:w-1/2">
             <SearchButton onSearch={handleSearch} />
           </div>
-        </div>
-
-        {/* Category Filter - Centered below search */}
-        <div className="flex mb-8">
-          <div className="w-full max-w-md">
+          {/* <div className="w-full md:w-1/2">
             <CategoryFilter onCategoryChange={handleCategoryChange} />
-          </div>
-        </div>
+          </div> */}
         </div>
 
         {/* Products Grid */}
@@ -170,7 +152,6 @@ export default function Homepage() {
             </div>
             <div className="flex space-x-4">
               <a href="/homepage" className="hover:text-yellow-400 transition-colors text-sm">Home</a>
-              <a href="#" className="hover:text-yellow-400 transition-colors text-sm">Browse Bikes</a>
               <a href="/order-history" className="hover:text-yellow-400 transition-colors text-sm">My Orders</a>
             </div>
           </div>

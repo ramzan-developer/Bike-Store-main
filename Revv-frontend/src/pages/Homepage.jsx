@@ -1,89 +1,16 @@
-
-// import Nav from "../components/Nav";
-// import { useEffect, useState } from "react";
-// import Products from "../components/Products";
-// import SearchButton from "../components/SearchButton";
-
-// export default function Homepage() {
-//   const [email, setEmail] = useState(null);
-//   const [products, setProducts] = useState([]);
-//   const [filteredProducts, setFilteredProducts] = useState([]);
-
-//   useEffect(() => {
-//     const storedEmail = localStorage.getItem("email");
-//     if (storedEmail) {
-//       setEmail(storedEmail);
-//     }
-//     fetchProducts();
-//   }, []);
-
-//   async function fetchProducts() {
-//     try {
-//       const response = await fetch("http://localhost:3000/products");
-//       const data = await response.json();
-//       // Shuffle products for variety
-//       for (let i = data.length - 1; i > 0; i--) {
-//         const j = Math.floor(Math.random() * (i + 1));
-//         [data[i], data[j]] = [data[j], data[i]];
-//       }
-//       setProducts(data);
-//       setFilteredProducts(data);
-//     } catch (error) {
-//       console.error("Error fetching products:", error);
-//     }
-//   }
-
-//   const handleSearch = (query) => {
-//     const filtered = products.filter(
-//       (product) =>
-//         product.productName.toLowerCase().includes(query.toLowerCase()) ||
-//         product.category.toLowerCase().includes(query.toLowerCase())
-//     );
-//     setFilteredProducts(filtered);
-//   };
-
-//   return (
-//     <div className="bg-cream min-h-dvh">
-//       <Nav />
-//       <div className="p-4">
-//         <div className="mb-4 flex justify-center">
-//           <SearchButton onSearch={handleSearch} />
-//         </div>
-//         <div className="grid grid-cols-4 gap-4">
-//           {filteredProducts.length === 0 ? (
-//             <div className="col-span-4 text-center text-xl text-gray-500">
-//               No items to display
-//             </div>
-//           ) : (
-//             filteredProducts.map((item, index) => (
-//               <div key={index}>
-//                 <Products
-//                   productName={item.productName}
-//                   rate={item.rate}
-//                   description={item.description}
-//                   imgURL={item.imgURL}
-//                   supplierEmail={item.supplierEmail} // Added this line
-//                 />
-//               </div>
-//             ))
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 import Nav from "../components/Nav";
 import { useEffect, useState } from "react";
 import Products from "../components/Products";
-import CategoryFilter from "../components/CategoryFilter"; // Make sure to import the CategoryFilter component
+import CategoryFilter from "../components/CategoryFilter";
+import SearchButton from "../components/SearchButton"; // Import SearchButton
 
 export default function Homepage() {
   const [email, setEmail] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [userName, setUserName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(""); // Add state for category filter
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
@@ -93,18 +20,13 @@ export default function Homepage() {
     }
     setUserName(storedName);
     fetchProducts();
-  }, [selectedCategory]); // Add selectedCategory as a dependency
+  }, []); // Remove selectedCategory from dependencies
 
-  // Update the fetchProducts function to include category filter
+  // Fetch all products
   const fetchProducts = async () => {
     try {
-      let url = "http://localhost:3000/products";
-      if (selectedCategory) {
-        url += `?category=${selectedCategory}`;
-      }
-      
-      const response = await fetch(url);
-      const data = await response.json();
+      const response = await fetch("http://localhost:3000/products");
+      let data = await response.json();
       
       // Shuffle products for variety
       for (let i = data.length - 1; i > 0; i--) {
@@ -113,10 +35,42 @@ export default function Homepage() {
       }
       
       setProducts(data);
-      setFilteredProducts(data);
+      applyFilters(data, selectedCategory, searchQuery);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
+  };
+
+  // Apply both category and search filters
+  const applyFilters = (productsToFilter, category, query) => {
+    let filtered = [...productsToFilter];
+    
+    // Apply category filter
+    if (category) {
+      filtered = filtered.filter(product => 
+        product.category && product.category._id === category
+      );
+    }
+    
+    // Apply search filter
+    if (query) {
+      filtered = filtered.filter(product =>
+        product.productName.toLowerCase().includes(query.toLowerCase()) ||
+        (product.description && product.description.toLowerCase().includes(query.toLowerCase()))
+      );
+    }
+    
+    setFilteredProducts(filtered);
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    applyFilters(products, categoryId, searchQuery);
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    applyFilters(products, selectedCategory, query);
   };
 
   return (
@@ -137,21 +91,43 @@ export default function Homepage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {/* Section Title and Category Filter */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-2">
+        {/* Search and Filter Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <h2 className="text-2xl font-bold text-gray-800">
             Latest Bikes
           </h2>
-          {/* Add the CategoryFilter component */}
-          <CategoryFilter onCategoryChange={setSelectedCategory} />
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <div className="w-full md:w-64">
+              <SearchButton onSearch={handleSearch} />
+            </div>
+            <div className="w-full md:w-64">
+              <CategoryFilter onCategoryChange={handleCategoryChange} />
+            </div>
+          </div>
         </div>
 
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <div className="text-4xl mb-4">🚴</div>
-            <h3 className="text-xl text-gray-600 mb-2">No bikes available</h3>
-            <p className="text-gray-500">Check back later for new arrivals</p>
+            <h3 className="text-xl text-gray-600 mb-2">
+              {selectedCategory || searchQuery ? "No matching bikes found" : "No bikes available"}
+            </h3>
+            <p className="text-gray-500">
+              {selectedCategory || searchQuery ? "Try different search criteria or category" : "Check back later for new arrivals"}
+            </p>
+            {(selectedCategory || searchQuery) && (
+              <button
+                onClick={() => {
+                  setSelectedCategory("");
+                  setSearchQuery("");
+                  applyFilters(products, "", "");
+                }}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Show All Bikes
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -163,6 +139,7 @@ export default function Homepage() {
                   description={item.description}
                   imgURL={item.imgURL}
                   supplierEmail={item.supplierEmail}
+                  category={item.category}
                 />
               </div>
             ))}

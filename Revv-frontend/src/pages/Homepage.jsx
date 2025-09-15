@@ -92,7 +92,7 @@ export default function Homepage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Search and Filter Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <h2 className="text-2xl font-bold text-gray-800">
             Latest Bikes
           </h2>
@@ -104,6 +104,20 @@ export default function Homepage() {
               <CategoryFilter onCategoryChange={handleCategoryChange} />
             </div>
           </div>
+        </div> */}
+        <div className="flex justify-between items-center mb-6">
+        <div className="flex mb-6">
+          <div className="w-full max-w-md">
+            <SearchButton onSearch={handleSearch} />
+          </div>
+        </div>
+
+        {/* Category Filter - Centered below search */}
+        <div className="flex mb-8">
+          <div className="w-full max-w-md">
+            <CategoryFilter onCategoryChange={handleCategoryChange} />
+          </div>
+        </div>
         </div>
 
         {/* Products Grid */}

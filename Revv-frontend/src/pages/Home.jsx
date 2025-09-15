@@ -65,7 +65,7 @@ const Home = () => {
               Explore sports, mountain, and electric bikes from top suppliers.
             </p>
             <Link 
-              to="/homepage" 
+              to="/login" 
               className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded"
             >
               Shop Now

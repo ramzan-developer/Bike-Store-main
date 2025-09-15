@@ -76,12 +76,14 @@
 import Nav from "../components/Nav";
 import { useEffect, useState } from "react";
 import Products from "../components/Products";
+import CategoryFilter from "../components/CategoryFilter"; // Make sure to import the CategoryFilter component
 
 export default function Homepage() {
   const [email, setEmail] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [userName, setUserName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(""); // Add state for category filter
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
@@ -91,23 +93,31 @@ export default function Homepage() {
     }
     setUserName(storedName);
     fetchProducts();
-  }, []);
+  }, [selectedCategory]); // Add selectedCategory as a dependency
 
-  async function fetchProducts() {
+  // Update the fetchProducts function to include category filter
+  const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:3000/products");
+      let url = "http://localhost:3000/products";
+      if (selectedCategory) {
+        url += `?category=${selectedCategory}`;
+      }
+      
+      const response = await fetch(url);
       const data = await response.json();
+      
       // Shuffle products for variety
       for (let i = data.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [data[i], data[j]] = [data[j], data[i]];
       }
+      
       setProducts(data);
       setFilteredProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -127,10 +137,14 @@ export default function Homepage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {/* Section Title */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
-          Latest Bikes
-        </h2>
+        {/* Section Title and Category Filter */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-2">
+          <h2 className="text-2xl font-bold text-gray-800">
+            Latest Bikes
+          </h2>
+          {/* Add the CategoryFilter component */}
+          <CategoryFilter onCategoryChange={setSelectedCategory} />
+        </div>
 
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (

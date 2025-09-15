@@ -4,12 +4,41 @@ import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-export default function Products({ productName, rate, description, imgURL, supplierEmail }) {
+export default function Products({ 
+  productName, 
+  rate, 
+  description, 
+  imgURL, 
+  supplierEmail, 
+  category // Add category as a prop
+}) {
   const price = (90 / 100) * rate;
   const formattedRate = rate.toLocaleString("en-IN");
   const formattedPrice = price.toLocaleString("en-IN");
   const [email, setEmail] = useState(null);
+  const [categoryName, setCategoryName] = useState("");
   const navigate = useNavigate();
+
+  // Fetch category name when component mounts or category prop changes
+  useEffect(() => {
+    if (category) {
+      fetchCategoryName(category);
+    }
+  }, [category]);
+
+  const fetchCategoryName = async (categoryId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/categories/${categoryId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategoryName(data.name);
+      } else {
+        console.error("Failed to fetch category");
+      }
+    } catch (error) {
+      console.error("Error fetching category:", error);
+    }
+  };
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
@@ -20,30 +49,29 @@ export default function Products({ productName, rate, description, imgURL, suppl
 
   // Handle the add to cart
   function handleClick(e) {
-  e.preventDefault();
-  
-  if (!email) {
-    toast.error("Please log in to add items to cart");
-    navigate("/");
-    return;
-  }
-  
-  // Validate that we have a supplier email
-  if (!supplierEmail) {
-    toast.error("Product supplier information is missing");
-    return;
-  }
-  
-  toast.success("Product added to cart");
-  
-  const product = {
-    productName,
-    price: rate,
-    imgURL,
-    quantity: 1,
-    supplierEmail: supplierEmail // Use the actual prop value
-  };
-
+    e.preventDefault();
+    
+    if (!email) {
+      toast.error("Please log in to add items to cart");
+      navigate("/");
+      return;
+    }
+    
+    // Validate that we have a supplier email
+    if (!supplierEmail) {
+      toast.error("Product supplier information is missing");
+      return;
+    }
+    
+    toast.success("Product added to cart");
+    
+    const product = {
+      productName,
+      price: rate,
+      imgURL,
+      quantity: 1,
+      supplierEmail: supplierEmail
+    };
 
     fetch("http://localhost:3000/cart", {
       method: "POST",
@@ -72,6 +100,14 @@ export default function Products({ productName, rate, description, imgURL, suppl
       <div className="pl-3 pt-1">
         <h1 className="text-3xl bg-darkbrown font-black mb-2">{productName}</h1>
         <h3 className="">{description}</h3>
+        
+        {/* Display category if available */}
+        {categoryName && (
+          <p className="bg-darkbrown font-light mt-2 text-sm text-blue-600 capitalize">
+            Category: {categoryName}
+          </p>
+        )}
+        
         <p className="bg-darkbrown font-light line-through mt-4">
           ₹{formattedRate}
         </p>
@@ -91,10 +127,11 @@ Products.propTypes = {
   rate: PropTypes.number.isRequired,
   description: PropTypes.string.isRequired,
   imgURL: PropTypes.string.isRequired,
-  supplierEmail: PropTypes.string.isRequired, // Add this prop validation
+  supplierEmail: PropTypes.string.isRequired,
+  category: PropTypes.string, // Add category prop type
 };
 
-// Optional: Add default props as a fallback
 Products.defaultProps = {
-  supplierEmail: "", // Empty string as default
+  supplierEmail: "",
+  category: null, // Default value for category
 };

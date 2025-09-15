@@ -18,6 +18,23 @@ const SupplierManageBikes = () => {
   const [bikes, setBikes] = useState([]);
   const [editId, setEditId] = useState(null);
   const [supplierEmail, setSupplierEmail] = useState("");
+  const [categories, setCategories] = useState([]);
+
+// Fetch categories on component mount
+useEffect(() => {
+  fetchCategories();
+}, []);
+
+const fetchCategories = async () => {
+  try {
+    const response = await fetch("http://localhost:3000/categories");
+    const data = await response.json();
+    setCategories(data);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    toast.error("Failed to load categories");
+  }
+};
 
   useEffect(() => {
     const email = localStorage.getItem("email");
@@ -163,14 +180,20 @@ const SupplierManageBikes = () => {
             required
             className="p-2 border rounded"
           />
-          <input
-            name="category"
-            value={bike.category}
-            onChange={handleChange}
-            placeholder="Category *"
-            required
-            className="p-2 border rounded"
-          />
+          <select
+              name="category"
+              value={bike.category}
+              onChange={handleChange}
+              required
+              className="p-2 border rounded"
+            >
+              <option value="">Select Category</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+          </select>
           <input
             name="rate"
             type="number"

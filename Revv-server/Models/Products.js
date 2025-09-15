@@ -11,7 +11,8 @@ const productSchema = new Schema({
     required: true,
   },
   category: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "categories",
     required: true,
   },
   description: {
@@ -24,7 +25,7 @@ const productSchema = new Schema({
   },
   supplierEmail: {
     type: String,
-    required: true, // 👈 MUST be required so we can count properly
+    required: true,
   },
 });
 

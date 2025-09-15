@@ -1,8 +1,205 @@
+// import { useState, useEffect } from "react";
+// import { PackagePlus, Users, Boxes, ShoppingCart, Settings, Tag } from "lucide-react";
+// import { useNavigate } from "react-router-dom";
+// import { toast } from "react-toastify";
+// import axios from "axios";
+// import CategoryManager from "../components/CategoryManager";
+
+// const AdminPage = () => {
+//   const [users, setUsers] = useState([]);
+//   const [suppliers, setSuppliers] = useState([]);
+//   const [products, setProducts] = useState([]);
+//   const [orders, setOrders] = useState([]);
+//   const [reviews, setReviews] = useState([]);
+//   const [salesByCategory, setSalesByCategory] = useState([]); // Added this state
+//   const [activeSection, setActiveSection] = useState("dashboard");
+//   const [selectedItem, setSelectedItem] = useState(null);
+//   const [stats, setStats] = useState({
+//     totalUsers: 0,
+//     totalSuppliers: 0,
+//     totalProducts: 0,
+//     totalOrders: 0,
+//     totalRevenue: 0
+//   });
+//   const navigate = useNavigate();
+
+//   const BASE_URL = "http://localhost:3000";
+
+//   useEffect(() => {
+//     fetchAllData();
+//   }, []);
+
+//   const fetchAllData = async () => {
+//     try {
+//       const [
+//         usersRes, 
+//         suppliersRes, 
+//         productsRes, 
+//         ordersRes, 
+//         reviewsRes,
+//         salesRes // Added this
+//       ] = await Promise.all([
+//         axios.get(`${BASE_URL}/demo`),
+//         axios.get(`${BASE_URL}/supplier`),
+//         axios.get(`${BASE_URL}/products`),
+//         axios.get(`${BASE_URL}/orders`),
+//         axios.get(`${BASE_URL}/review`),
+//         axios.get(`${BASE_URL}/sales-by-category`) // Added this
+//       ]);
+      
+//       setUsers(usersRes.data);
+//       setSuppliers(suppliersRes.data);
+//       setProducts(productsRes.data);
+//       setOrders(ordersRes.data);
+//       setReviews(reviewsRes.data);
+//       setSalesByCategory(salesRes.data); // Added this
+
+//       // Calculate statistics
+//       const totalRevenue = ordersRes.data.reduce((sum, order) => sum + order.totalAmount, 0);
+      
+//       setStats({
+//         totalUsers: usersRes.data.length,
+//         totalSuppliers: suppliersRes.data.length,
+//         totalProducts: productsRes.data.length,
+//         totalOrders: ordersRes.data.length,
+//         totalRevenue: totalRevenue
+//       });
+//     } catch (error) {
+//       console.error("Failed to fetch data:", error);
+//       toast.error("Failed to load dashboard data");
+//     }
+//   };
+
+//   // ... (rest of your functions remain the same)
+
+//   return (
+//     <div className="min-h-screen bg-gray-100 p-6">
+//       <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">Admin Dashboard</h1>
+
+//       {/* Navigation Tabs */}
+//       <div className="flex flex-wrap justify-center gap-4 mb-8">
+//         {[
+//           { label: "Dashboard", value: "dashboard", icon: <Settings size={18} /> },
+//           { label: "Users", value: "users", icon: <Users size={18} /> },
+//           { label: "Suppliers", value: "suppliers", icon: <Users size={18} /> },
+//           { label: "Products", value: "products", icon: <PackagePlus size={18} /> },
+//           { label: "Orders", value: "orders", icon: <ShoppingCart size={18} /> },
+//           { label: "Reviews", value: "reviews", icon: <Boxes size={18} /> },
+//           { label: "Categories", value: "categories", icon: <Tag size={18} /> },
+//           { label: "Reports", value: "reports", icon: <Tag size={18} /> } // Added Reports tab
+//         ].map((tab) => (
+//           <button
+//             key={tab.value}
+//             onClick={() => setActiveSection(tab.value)}
+//             className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium transition-all duration-200 ${
+//               activeSection === tab.value
+//                 ? "bg-blue-600 text-white shadow-lg"
+//                 : "bg-white text-blue-600 border border-blue-300 hover:bg-blue-100"
+//             }`}
+//           >
+//             {tab.icon}
+//             {tab.label}
+//           </button>        ))}
+//       </div>
+
+//       {/* Dashboard Stats */}
+//       {activeSection === "dashboard" && (
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+//           <div className="bg-white p-6 rounded-lg shadow-md text-center">
+//             <h3 className="text-lg font-semibold text-gray-600">Total Users</h3>
+//             <p className="text-3xl font-bold text-blue-600">{stats.totalUsers}</p>
+//           </div>
+//           <div className="bg-white p-6 rounded-lg shadow-md text-center">
+//             <h3 className="text-lg font-semibold text-gray-600">Total Suppliers</h3>
+//             <p className="text-3xl font-bold text-green-600">{stats.totalSuppliers}</p>
+//           </div>
+//           <div className="bg-white p-6 rounded-lg shadow-md text-center">
+//             <h3 className="text-lg font-semibold text-gray-600">Total Products</h3>
+//             <p className="text-3xl font-bold text-purple-600">{stats.totalProducts}</p>
+//           </div>
+//           <div className="bg-white p-6 rounded-lg shadow-md text-center">
+//             <h3 className="text-lg font-semibold text-gray-600">Total Orders</h3>
+//             <p className="text-3xl font-bold text-yellow-600">{stats.totalOrders}</p>
+//           </div>
+//           <div className="bg-white p-6 rounded-lg shadow-md text-center">
+//             <h3 className="text-lg font-semibold text-gray-600">Total Revenue</h3>
+//             <p className="text-3xl font-bold text-red-600">₹{stats.totalRevenue.toLocaleString("en-IN")}</p>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* ... (other sections remain the same) ... */}
+
+//       {/* Categories Section */}      {activeSection === "categories" && (
+//         <div className="bg-white p-6 rounded-xl shadow-md">
+//           <CategoryManager />
+//         </div>
+//       )}
+
+//       {/* Reports Section */}
+//       {activeSection === "reports" && (
+//         <div className="bg-white p-6 rounded-xl shadow-md">
+//           <h2 className="text-2xl font-bold mb-6 text-blue-700">Sales by Category</h2>
+//           <div className="overflow-x-auto">
+//             <table className="min-w-full table-auto">
+//               <thead>
+//                 <tr className="bg-blue-600 text-white">
+//                   <th className="p-3">Category</th>
+//                   <th className="p-3">Total Sales</th>
+//                   <th className="p-3">Total Orders</th>
+//                   <th className="p-3">Total Quantity</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {salesByCategory.map((item) => (
+//                   <tr key={item._id} className="border-b hover:bg-gray-50">
+//                     <td className="p-3 font-medium">{item.categoryName}</td>
+//                     <td className="p-3">₹{item.totalSales?.toLocaleString("en-IN") || 0}</td>
+//                     <td className="p-3">{item.totalOrders || 0}</td>
+//                     <td className="p-3">{item.totalQuantity || 0}</td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Reviews Section */}
+//       {activeSection === "reviews" && (
+//         <div className="bg-white p-6 rounded-xl shadow-md">
+//           <h2 className="text-2xl font-bold mb-6 text-blue-700">Review Management</h2>
+//           <div className="space-y-4">
+//             {reviews.map(review => (
+//               <div key={review._id} className="border p-4 rounded-lg">
+//                 <div className="flex justify-between items-start">
+//                   <p className="text-gray-700">{review.review}</p>
+//                   <button
+//                     onClick={() => handleDeleteReview(review._id)}
+//                     className="px-3 py-1 bg-red-600 text-white rounded"
+//                   >
+//                     Delete
+//                   </button>
+//                 </div>
+//                 <p className="text-sm text-gray-500 mt-2">- {review.email}</p>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default AdminPage;
+
 import { useState, useEffect } from "react";
-import { PackagePlus, Users, Boxes, ShoppingCart, Settings } from "lucide-react";
+import { PackagePlus, Users, Boxes, ShoppingCart, Settings, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
+import CategoryManager from "../components/CategoryManager";
+import Logout from "../components/Logout";
 
 const AdminPage = () => {
   const [users, setUsers] = useState([]);
@@ -10,8 +207,8 @@ const AdminPage = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [salesByCategory, setSalesByCategory] = useState([]);
   const [activeSection, setActiveSection] = useState("dashboard");
-  const [selectedItem, setSelectedItem] = useState(null);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalSuppliers: 0,
@@ -34,13 +231,15 @@ const AdminPage = () => {
         suppliersRes, 
         productsRes, 
         ordersRes, 
-        reviewsRes
+        reviewsRes,
+        salesRes
       ] = await Promise.all([
         axios.get(`${BASE_URL}/demo`),
         axios.get(`${BASE_URL}/supplier`),
         axios.get(`${BASE_URL}/products`),
         axios.get(`${BASE_URL}/orders`),
-        axios.get(`${BASE_URL}/review`)
+        axios.get(`${BASE_URL}/review`),
+        axios.get(`${BASE_URL}/sales-by-category`)
       ]);
       
       setUsers(usersRes.data);
@@ -48,6 +247,7 @@ const AdminPage = () => {
       setProducts(productsRes.data);
       setOrders(ordersRes.data);
       setReviews(reviewsRes.data);
+      setSalesByCategory(salesRes.data);
 
       // Calculate statistics
       const totalRevenue = ordersRes.data.reduce((sum, order) => sum + order.totalAmount, 0);
@@ -161,9 +361,23 @@ const AdminPage = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("email");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold text-blue-800">Admin Dashboard</h1>
+        <div className="flex items-center gap-4">
+        </div>
+        <div onClick={handleLogout}>
+            <Logout />
+          </div>
+      </div>
 
       {/* Navigation Tabs */}
       <div className="flex flex-wrap justify-center gap-4 mb-8">
@@ -174,6 +388,8 @@ const AdminPage = () => {
           { label: "Products", value: "products", icon: <PackagePlus size={18} /> },
           { label: "Orders", value: "orders", icon: <ShoppingCart size={18} /> },
           { label: "Reviews", value: "reviews", icon: <Boxes size={18} /> },
+          { label: "Categories", value: "categories", icon: <Tag size={18} /> },
+          { label: "Reports", value: "reports", icon: <Tag size={18} /> }
         ].map((tab) => (
           <button
             key={tab.value}
@@ -187,15 +403,10 @@ const AdminPage = () => {
             {tab.icon}
             {tab.label}
           </button>
+          
         ))}
-        
-        {/* <button
-          onClick={() => navigate("/homepage")}
-          className="flex items-center gap-2 px-5 py-2 rounded-full font-medium bg-green-600 text-white hover:bg-green-700"
-        >
-          🏠 Home
-        </button> */}
       </div>
+      
 
       {/* Dashboard Stats */}
       {activeSection === "dashboard" && (
@@ -417,6 +628,42 @@ const AdminPage = () => {
         </div>
       )}
 
+      {/* Categories Section */}
+      {activeSection === "categories" && (
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <CategoryManager />
+        </div>
+      )}
+
+      {/* Reports Section */}
+      {activeSection === "reports" && (
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="text-2xl font-bold mb-6 text-blue-700">Sales by Category</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="bg-blue-600 text-white">
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Total Sales</th>
+                  <th className="p-3">Total Orders</th>
+                  <th className="p-3">Total Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesByCategory.map((item) => (
+                  <tr key={item._id} className="border-b hover:bg-gray-50">
+                    <td className="p-3 font-medium">{item.categoryName}</td>
+                    <td className="p-3">₹{item.totalSales?.toLocaleString("en-IN") || 0}</td>
+                    <td className="p-3">{item.totalOrders || 0}</td>
+                    <td className="p-3">{item.totalQuantity || 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Reviews Section */}
       {activeSection === "reviews" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
@@ -436,10 +683,11 @@ const AdminPage = () => {
                 <p className="text-sm text-gray-500 mt-2">- {review.email}</p>
               </div>
             ))}
-          </div>
+            </div>
         </div>
       )}
     </div>
+    
   );
 };
 

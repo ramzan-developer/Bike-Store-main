@@ -1,6 +1,6 @@
 # Bike Store – MERN Stack E-commerce App
 
-A demo e-commerce website built using the MERN stack that allows users to browse, search, and purchase bikes. Includes both user and admin functionalities.
+A demo e-commerce website built using the MERN stack that allows users to browse, search and purchase bikes. Includes both user and admin functionalities.
 
 ---
 
@@ -18,18 +18,26 @@ A demo e-commerce website built using the MERN stack that allows users to browse
 ## Features
 
 ### User Features
-- Login and authentication
+- Login, Register and authentication
 - View all available bikes
 - Search for bikes
 - Add bikes to cart
-- Checkout with multiple payment options (Google Pay / Card / Cash on Delivery)
+- Checkout options (Cash on Delivery)
 - Submit website reviews
+
+### Supplier Features
+- Login, Register and authentication
+- Manage bikes
+- View Order details
+- Order Management page
 
 ### Admin Features
 - Add new bike products
 - View all registered users and their details
 - View and manage user reviews
 - Delete users or products
+- Manage Bike Categories
+- View and Manage User, Supplier Accounts details
 
 > This website is not responsive.  
 > Order tracking is not included.
@@ -114,7 +122,7 @@ Before running this project, ensure you have the following installed:
 ---
 
 ## Author
-Roland Kenneth P
+Ramzan Shaikh
 
 
 

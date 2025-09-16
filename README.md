@@ -69,7 +69,7 @@ Before running this project, ensure you have the following installed:
 ## Getting Started
 
 ### Clone your repo
-- git clone https://github.com/Rolaanddd/Bike-Store.git
+- git clone https://github.com/ramzan-developer/Bike-Store-main.git
 - cd Bike-Store
 
 ### Set up backend
@@ -92,32 +92,38 @@ Before running this project, ensure you have the following installed:
 
 ## Screenshots
 
-### Login
-![Image](https://github.com/user-attachments/assets/71ded843-98df-43a8-b98d-c7a5fdb26b95)
+### Landing Page
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Landing%20Page.png)
 
-### Homepage
-![Image](https://github.com/user-attachments/assets/c577b9c0-9524-4ed5-9ea9-25ed95968060)
+### Login
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Admin%20Login%20Page.png)
+
+### Customer Homepage
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Customer%20Dashboard.png)
+
+### AboutUs
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/About%20Us%20Page.png)
 
 ### Cart 
-![Image](https://github.com/user-attachments/assets/821a5e04-97a5-4ca6-8307-904694e0ec02)
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Add%20To%20Cart%20Page.png)
 
 ### Checkout
-![Image](https://github.com/user-attachments/assets/227dfed5-0cc1-4a90-9b2f-962fc52f5214)
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Checkout%20Page.png)
 
-### Reviews
-![Image](https://github.com/user-attachments/assets/64c34b61-543a-4e30-93dd-d7c61407c750)
+### Supplier : ManageBikes
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Supplier%20manage%20bike%20page.png)
 
-### Admin : add products
-![Image](https://github.com/user-attachments/assets/108f9073-1ca2-4886-b3cc-a82d63bf2fd3)
+### Admin : Dashboard
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Admin%20Dashboard%20mainPage.png)
 
-### Admin : view/delete users
-![Image](https://github.com/user-attachments/assets/b626e618-abe6-44ce-af1a-f1e43bd03e80)
+### Supplier : Dashboard
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Supplier%20Dashboard%20Page.png)
 
-### Admin : view reviews
-![Image](https://github.com/user-attachments/assets/618ed53f-2edb-4511-90db-8da61cf7cb65)
+### Supplier : OrderManagement
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Supplier%20View%20Orders%20Page.png)
 
-### Admin : view/delete products
-![Image](https://github.com/user-attachments/assets/fffada52-9683-4ae4-b6bd-c8f201e841df)
+### Admin : view/delete User/Supplier
+![Image](https://github.com/ramzan-developer/Bike-Store-main/blob/7fd613e0a155a261a966a86e3b5c8e93fbc519c1/Admin_Supplier.png)
 
 ---
 
